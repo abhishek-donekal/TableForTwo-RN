@@ -32,9 +32,7 @@
     }
   ],
   "functions": {
-    "api/**/*.js":            { "maxDuration": 10  },
-    "api/tracking/stream.js": { "maxDuration": 300 },
-    "api/webhooks/stripe.js": { "maxDuration": 10  }
+    "api/**/*.js": { "maxDuration": 10 }
   },
   "crons": [
     { "path": "/api/cron/purge-locations", "schedule": "0 3 * * *" }
