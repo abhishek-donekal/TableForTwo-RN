@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -16,6 +16,7 @@ import LiveDateSafetyScreen from '../screens/safety/LiveDateSafetyScreen';
 import FeedbackScreen from '../screens/feedback/FeedbackScreen';
 import BookingsScreen from '../screens/bookings/BookingsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import WebLandingScreen from '../screens/landing/WebLandingScreen';
 
 import type { CuratedMatchBatch, DateCommitment, DateBooking } from '../models/types';
 
@@ -113,6 +114,12 @@ function HomeTabs() {
 
 export default function RootNavigator() {
   const { state } = useApp();
+  const [webLandingDone, setWebLandingDone] = useState(false);
+
+  // On web, show marketing landing before onboarding
+  if (Platform.OS === 'web' && !state.hasCompletedOnboarding && !webLandingDone) {
+    return <WebLandingScreen onBegin={() => setWebLandingDone(true)} />;
+  }
 
   if (!state.hasCompletedOnboarding) {
     return <OnboardingScreen />;
@@ -131,7 +138,6 @@ export default function RootNavigator() {
           color: T42.textPrimary,
           fontSize: 17,
         },
-        headerBackTitleVisible: false,
         contentStyle: { backgroundColor: T42.background },
         animation: 'slide_from_right',
       }}
