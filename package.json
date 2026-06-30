@@ -33,7 +33,13 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "prisma": "^5.22.0",
     "typescript": "~6.0.3"
+  },
+  "backendDependencies": {
+    "@prisma/client": "^5.22.0",
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^16.12.0"
   },
   "private": true
 }
