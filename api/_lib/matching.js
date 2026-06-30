@@ -1,22 +1,10 @@
-/**
- * Agent 2 + 4 — Strict Boolean Preference Matching Engine
- *
- * There is NO ELO. There is NO "compatibility score."
- * Every preference is a hard boolean gate. A candidate either passes all
- * criteria or is excluded entirely. Returns at most 3 results.
- *
- * Matching is BIDIRECTIONAL: the broadcaster must also satisfy the
- * candidate's preferences (otherwise the candidate would see a mismatch
- * when the introduction is presented to them).
- */
-
 const prisma = require('./prisma');
 
 /**
- * Find up to 3 eligible candidates for a date broadcast.
+ * Find up to 3 eligible candidates for a date broadcast with 100% bidirectional enforcement.
  *
  * @param {string} broadcastId  - The DateBroadcast.id
- * @returns {Promise<Array>}    - Array of User objects (≤ 3)
+ * @returns {Promise<Array>}    - Array of clean User objects (≤ 3)
  */
 async function findStrictMatches(broadcastId) {
   const broadcast = await prisma.dateBroadcast.findUniqueOrThrow({
@@ -24,62 +12,49 @@ async function findStrictMatches(broadcastId) {
     include: { broadcaster: true },
   });
 
-  const b = broadcast.broadcaster; // broadcaster shorthand
-
-  // ── Step 1: Query all users who pass broadcaster's hard preferences ─────
-  //    Uses the composite index on (zipCode, bgCheckStatus, hasJoiningFee, isActive)
-  //    + index on (gender, orientation, heightCm, incomeRange, age)
+  const b = broadcast.broadcaster; 
 
   const candidates = await prisma.user.findMany({
     where: {
-      // Must be eligible to participate
+      // 1. System/Eligibility Flags
       bgCheckStatus:  'CLEAR',
       hasJoiningFee:  true,
       isActive:       true,
       isBanned:       false,
+      zipCode:        broadcast.zipCode,
+      id:             { not: b.id },
 
-      // Must be in the broadcast's zip code
-      zipCode: broadcast.zipCode,
-
-      // Not the broadcaster themselves
-      id: { not: b.id },
-
-      // ── Broadcaster's hard preferences (all must pass) ─────────────────
+      // 2. Broadcaster's Hard Preferences (Candidate must match these)
       gender:      { in: b.prefGenders },
       orientation: { in: b.prefOrientations },
-      heightCm: {
-        gte: b.prefHeightMinCm,
-        lte: b.prefHeightMaxCm,
-      },
+      heightCm:    { gte: b.prefHeightMinCm, lte: b.prefHeightMaxCm },
       incomeRange: { in: b.prefIncomeRanges },
-      age: {
-        gte: b.prefAgeMin,
-        lte: b.prefAgeMax,
-      },
+      age:         { gte: b.prefAgeMin, lte: b.prefAgeMax },
 
-      // ── Candidate must not already have an active commitment ───────────
+      // 3. RECIPROCAL CHECKS (Broadcaster must match Candidate's preferences)
+      prefGenders:      { has: b.gender },
+      prefOrientations: { has: b.orientation },
+      prefHeightMinCm:  { lte: b.heightCm },
+      prefHeightMaxCm:  { gte: b.heightCm },
+      prefIncomeRanges: { has: b.incomeRange },
+      prefAgeMin:       { lte: b.age },
+      prefAgeMax:       { gte: b.age },
+
+      // 4. Concurrency Guard (Candidate cannot be busy)
       commitmentsAsUser1: {
-        none: {
-          status: {
-            in: ['AWAITING_HOLDS', 'HOLDS_PLACED', 'DATE_ACTIVE'],
-          },
-        },
+        none: { status: { in: ['AWAITING_HOLDS', 'HOLDS_PLACED', 'DATE_ACTIVE'] } },
       },
       commitmentsAsUser2: {
-        none: {
-          status: {
-            in: ['AWAITING_HOLDS', 'HOLDS_PLACED', 'DATE_ACTIVE'],
-          },
-        },
+        none: { status: { in: ['AWAITING_HOLDS', 'HOLDS_PLACED', 'DATE_ACTIVE'] } },
       },
 
-      // ── Candidate must not already be matched to this broadcast ────────
+      // 5. Deduplication Guard
       matchesAsCandidate: {
         none: { broadcastId },
       },
     },
 
-    // Limit to 3 — client's specified maximum
+    // Safely takes up to 3 validated, mutually compatible profiles
     take: 3,
 
     select: {
@@ -93,38 +68,10 @@ async function findStrictMatches(broadcastId) {
       profession:  true,
       bio:         true,
       zipCode:     true,
-
-      // Candidate's own preferences (needed for reciprocal check below)
-      prefGenders:      true,
-      prefOrientations: true,
-      prefHeightMinCm:  true,
-      prefHeightMaxCm:  true,
-      prefIncomeRanges: true,
-      prefAgeMin:       true,
-      prefAgeMax:       true,
     },
   });
 
-  // ── Step 2: Reciprocal filter (candidate must also want the broadcaster)
-  //    Prisma doesn't support array-contains-element with cross-record checks
-  //    in a single query, so we filter in JS after the DB fetch.
-
-  const reciprocalMatches = candidates.filter(c => {
-    return (
-      c.prefGenders.includes(b.gender) &&
-      c.prefOrientations.includes(b.orientation) &&
-      b.heightCm >= c.prefHeightMinCm &&
-      b.heightCm <= c.prefHeightMaxCm &&
-      c.prefIncomeRanges.includes(b.incomeRange) &&
-      b.age >= c.prefAgeMin &&
-      b.age <= c.prefAgeMax
-    );
-  });
-
-  // Strip preference fields before returning to client
-  return reciprocalMatches.map(({ prefGenders, prefOrientations,
-    prefHeightMinCm, prefHeightMaxCm, prefIncomeRanges, prefAgeMin,
-    prefAgeMax, ...publicFields }) => publicFields);
+  return candidates;
 }
 
 module.exports = { findStrictMatches };
