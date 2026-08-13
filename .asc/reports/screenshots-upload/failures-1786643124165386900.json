@@ -1,0 +1,32 @@
+{
+  "versionLocalizationId": "b84c819e-f57b-4741-8fad-9e45ae5f0b57",
+  "path": ".asc\\reports\\screenshots-upload\\failures-1786643124165386900.json",
+  "deviceType": "IPHONE_67",
+  "displayType": "APP_IPHONE_67",
+  "setId": "d512bbff-e030-4e05-8eed-9432af21ed0b",
+  "files": [
+    "C:\\tf2\\screenshots\\1-welcome.png",
+    "C:\\tf2\\screenshots\\2-create-profile.png",
+    "C:\\tf2\\screenshots\\3-preferences.png",
+    "C:\\tf2\\screenshots\\4-home.png",
+    "C:\\tf2\\screenshots\\5-discover.png",
+    "C:\\tf2\\screenshots\\6-bookings.png"
+  ],
+  "pendingFiles": [
+    "C:\\tf2\\screenshots\\1-welcome.png",
+    "C:\\tf2\\screenshots\\2-create-profile.png",
+    "C:\\tf2\\screenshots\\3-preferences.png",
+    "C:\\tf2\\screenshots\\4-home.png",
+    "C:\\tf2\\screenshots\\5-discover.png",
+    "C:\\tf2\\screenshots\\6-bookings.png"
+  ],
+  "failures": [
+    {
+      "fileName": "1-welcome.png",
+      "filePath": "C:\\tf2\\screenshots\\1-welcome.png",
+      "error": "asset f064b8ed-1a3f-41d9-80ae-20372ce8024f delivery failed: IMAGE_ALPHA_NOT_ALLOWED"
+    }
+  ],
+  "error": "asset f064b8ed-1a3f-41d9-80ae-20372ce8024f delivery failed: IMAGE_ALPHA_NOT_ALLOWED",
+  "generatedAt": "2026-08-13T17:45:24Z"
+}
