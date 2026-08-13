@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TextInput, Image, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Slider as MultiSlider } from '@miblanchard/react-native-slider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -57,7 +57,8 @@ export default function OnboardingScreen() {
   const canContinue = (() => {
     if (step === 'about') return firstName.trim().length > 0 && zipcode.trim().length >= 5 && interests.length >= 1;
     if (step === 'lookingFor') return lookingForGender.length > 0;
-    if (step === 'backgroundCheck') return bgCheckPaid;
+    // iOS free release: verification is not purchasable in-app (guideline 3.1.1)
+    if (step === 'backgroundCheck') return Platform.OS === 'ios' ? true : bgCheckPaid;
     return true;
   })();
 
@@ -82,8 +83,10 @@ export default function OnboardingScreen() {
           maxDistance,
           minHeight: minHeight === 'Prefer not to say' ? undefined : minHeight,
         },
-        backgroundCheck: 'clear',
-        backgroundCheckNotes: 'Verified — no criminal record. Check completed via Checkr.',
+        backgroundCheck: Platform.OS === 'ios' ? 'not_started' : 'clear',
+        backgroundCheckNotes: Platform.OS === 'ios'
+          ? ''
+          : 'Verified — no criminal record. Check completed via Checkr.',
       };
       completeOnboarding(user);
       return;
@@ -333,6 +336,15 @@ export default function OnboardingScreen() {
               Results are shown on your profile — not to gatekeep, but so matches know who they are meeting.
             </Text>
 
+            {Platform.OS === 'ios' ? (
+              <Card style={s.feeCard}>
+                <Ionicons name="shield-checkmark-outline" size={32} color={T42.gold} />
+                <Text style={[Fonts.headline, { color: T42.textPrimary, marginTop: 8 }]}>Verification coming soon</Text>
+                <Text style={[Fonts.caption, { color: T42.textSecondary, marginTop: 8, textAlign: 'center', lineHeight: 18 }]}>
+                  Background verification will be completed before your first date.{'\n'}You'll be notified when it's available.
+                </Text>
+              </Card>
+            ) : (
             <Card style={s.feeCard}>
               <Ionicons name="shield-checkmark-outline" size={32} color={T42.gold} />
               <Text style={[Fonts.headline, { color: T42.textPrimary, marginTop: 8 }]}>One-time fee</Text>
@@ -342,6 +354,7 @@ export default function OnboardingScreen() {
                 Results typically within 24 hours.
               </Text>
             </Card>
+            )}
 
             <Card style={{ marginTop: 16, width: '100%', borderColor: T42.purple + '40' }}>
               <Text style={[Fonts.headline, { color: T42.textPrimary, marginBottom: 10 }]}>What shows on your profile</Text>
@@ -357,16 +370,18 @@ export default function OnboardingScreen() {
               ))}
             </Card>
 
-            <View style={{ marginTop: 16, width: '100%' }}>
-              {bgCheckPaid ? (
-                <View style={s.verifiedBadge}>
-                  <Ionicons name="checkmark-circle" size={22} color={T42.success} />
-                  <Text style={[Fonts.headline, { color: T42.success }]}>Verified — You're all set</Text>
-                </View>
-              ) : (
-                <GoldButton label={`Pay $${BACKGROUND_CHECK_FEE} & Verify`} onPress={() => setBgCheckPaid(true)} />
-              )}
-            </View>
+            {Platform.OS !== 'ios' && (
+              <View style={{ marginTop: 16, width: '100%' }}>
+                {bgCheckPaid ? (
+                  <View style={s.verifiedBadge}>
+                    <Ionicons name="checkmark-circle" size={22} color={T42.success} />
+                    <Text style={[Fonts.headline, { color: T42.success }]}>Verified — You're all set</Text>
+                  </View>
+                ) : (
+                  <GoldButton label={`Pay $${BACKGROUND_CHECK_FEE} & Verify`} onPress={() => setBgCheckPaid(true)} />
+                )}
+              </View>
+            )}
           </View>
         )}
       </ScrollView>

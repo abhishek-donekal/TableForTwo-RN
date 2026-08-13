@@ -33,6 +33,12 @@
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/logo.jpeg"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "031cebf0-a5b3-425b-8004-93803e599f02"
+      }
+    },
+    "owner": "duryo"
   }
 }
