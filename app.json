@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.tablefortwo.app",
+      "bundleIdentifier": "com.abhishekdonekal.tablefortwo",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -24,7 +24,7 @@
       "adaptiveIcon": {
         "backgroundColor": "#0D0A13"
       },
-      "package": "com.tablefortwo.app"
+      "package": "com.abhishekdonekal.tablefortwo"
     },
     "plugins": [
       "expo-asset"
