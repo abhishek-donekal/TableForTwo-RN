@@ -6,9 +6,19 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "tablefortwo",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D0A13"
+    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.tablefortwo.app"
+      "bundleIdentifier": "com.tablefortwo.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

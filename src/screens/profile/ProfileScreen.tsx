@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Switch, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Switch, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -120,22 +120,28 @@ export default function ProfileScreen() {
             <Text style={[Fonts.caption, { color: T42.textSecondary }]}>
               {user.backgroundCheck === 'clear'
                 ? 'Your background check is verified. Matches can see you\'re trusted.'
-                : `One-time $${BACKGROUND_CHECK_FEE} fee required before your first date.`}
+                : Platform.OS === 'ios'
+                  ? 'Background check verification is required before your first date.'
+                  : `One-time $${BACKGROUND_CHECK_FEE} fee required before your first date.`}
             </Text>
           </View>
         </View>
       </Card>
 
-      {/* Membership tiers */}
-      <SectionHeader title="Membership" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{ flexDirection: 'row', gap: 14 }}>
-          {PAID_TIERS.map(tier => (
-            <TierCard key={tier} tier={tier} isCurrent={state.subscription === tier}
-              onChoose={() => setSubscription(tier)} />
-          ))}
-        </View>
-      </ScrollView>
+      {/* Membership tiers — hidden on iOS (no IAP in free release; guideline 3.1.1) */}
+      {Platform.OS !== 'ios' && (
+        <>
+          <SectionHeader title="Membership" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ flexDirection: 'row', gap: 14 }}>
+              {PAID_TIERS.map(tier => (
+                <TierCard key={tier} tier={tier} isCurrent={state.subscription === tier}
+                  onChoose={() => setSubscription(tier)} />
+              ))}
+            </View>
+          </ScrollView>
+        </>
+      )}
 
       {/* Privacy */}
       <SectionHeader title="Privacy & Data" />
