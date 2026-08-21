@@ -11,7 +11,8 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "info@rkdtechgroup.com"
+        "appleId": "info@rkdtechgroup.com",
+        "ascAppId": "6803731949"
       }
     }
   }
